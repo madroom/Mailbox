@@ -18,6 +18,7 @@ class MailboxViewController: UIViewController, UIGestureRecognizerDelegate {
     @IBOutlet weak var listIcon: UIImageView!
     @IBOutlet weak var message: UIImageView!
     @IBOutlet weak var feedImage: UIImageView!
+    @IBOutlet weak var rescheduleImage: UIImageView!
     
     
     var messageOriginalCenter: CGPoint!
@@ -50,16 +51,23 @@ class MailboxViewController: UIViewController, UIGestureRecognizerDelegate {
         laterIcon.hidden = true
         deleteIcon.hidden = true
         listIcon.hidden = true
+        rescheduleImage.hidden = true
         archiveIcon.alpha = 0
         laterIcon.alpha = 0
         deleteIcon.alpha = 0
         listIcon.alpha = 0
+        rescheduleImage.alpha = 0
 
 
         let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: "didPanMessage:")
         
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: "scheduleDidTap:")
+        
         messageView.userInteractionEnabled = true
-        messageView.addGestureRecognizer(panGestureRecognizer)        
+        messageView.addGestureRecognizer(panGestureRecognizer)
+        
+        rescheduleImage.userInteractionEnabled = true
+        rescheduleImage.addGestureRecognizer(tapGestureRecognizer)
 
         // Do any additional setup after loading the view.
     }
@@ -168,12 +176,13 @@ class MailboxViewController: UIViewController, UIGestureRecognizerDelegate {
             } else if translation.x < -260 {
                 UIView.animateWithDuration(0.3, animations: { () -> Void in
                     self.message.center = self.messageLeft
-                    self.listIcon.alpha = 1
+//                    self.rescheduleImage.alpha = 1
                 })
             } else if translation.x < -60 {
                 UIView.animateWithDuration(0.3, animations: { () -> Void in
                     self.message.center = self.messageLeft
-                    self.laterIcon.alpha = 1
+                    self.rescheduleImage.alpha = 1
+                    self.rescheduleImage.hidden = false
                 })
             } else {
                 UIView.animateWithDuration(0.3, animations: { () -> Void in
@@ -186,6 +195,19 @@ class MailboxViewController: UIViewController, UIGestureRecognizerDelegate {
     }
     
     
+
+
+    @IBAction func scheduleDidTap(sender: UITapGestureRecognizer) {
+
+        listIcon.hidden = true
+        laterIcon.hidden = true
+        UIView.animateWithDuration(0.3, animations: { () -> Void in
+            self.rescheduleImage.alpha = 0
+            self.rescheduleImage.hidden = true
+            self.messageView.frame.size.height = 0
+            self.feedImage.transform = CGAffineTransformMakeTranslation(0, -86)
+        })
+    }
     
     
     
