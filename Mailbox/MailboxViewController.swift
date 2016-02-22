@@ -10,6 +10,9 @@ import UIKit
 
 class MailboxViewController: UIViewController, UIGestureRecognizerDelegate {
 
+    @IBOutlet weak var mailboxView: UIView!
+   
+    @IBOutlet weak var menuImage: UIImageView!
     @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var messageView: UIView!
     @IBOutlet weak var deleteIcon: UIImageView!
@@ -20,6 +23,10 @@ class MailboxViewController: UIViewController, UIGestureRecognizerDelegate {
     @IBOutlet weak var feedImage: UIImageView!
     @IBOutlet weak var rescheduleImage: UIImageView!
     
+    
+    var mailboxViewOriginalCenter: CGPoint!
+    var menuImageOffset: CGFloat!
+
     
     var messageOriginalCenter: CGPoint!
     var messageOffset: CGFloat!
@@ -63,12 +70,20 @@ class MailboxViewController: UIViewController, UIGestureRecognizerDelegate {
         
         let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: "scheduleDidTap:")
         
+        let edgeGesture = UIScreenEdgePanGestureRecognizer(target: self, action: "onEdgePan:")
+        edgeGesture.edges = UIRectEdge.Left
+        
         messageView.userInteractionEnabled = true
         messageView.addGestureRecognizer(panGestureRecognizer)
         
         rescheduleImage.userInteractionEnabled = true
         rescheduleImage.addGestureRecognizer(tapGestureRecognizer)
 
+        
+        mailboxView.userInteractionEnabled = true
+        mailboxView.addGestureRecognizer(edgeGesture)
+        
+        
         // Do any additional setup after loading the view.
     }
 
@@ -85,6 +100,74 @@ class MailboxViewController: UIViewController, UIGestureRecognizerDelegate {
             ),
             dispatch_get_main_queue(), closure)
     }
+    
+    
+    
+    
+    @IBAction func onEdgePan(sender: UIScreenEdgePanGestureRecognizer) {
+        let translation = (sender.translationInView(view))
+        let point = sender.locationInView(view)
+        print("edge panned")
+        
+//        mailboxView.frame.origin.x = translation.x
+        
+        if sender.state == UIGestureRecognizerState.Began {
+            mailboxViewOriginalCenter = mailboxView.center
+            
+        } else if sender.state == UIGestureRecognizerState.Changed {
+            mailboxView.center = CGPoint(x: mailboxViewOriginalCenter.x + translation.x, y: mailboxViewOriginalCenter.y)
+            
+        } else if sender.state == UIGestureRecognizerState.Ended {
+            
+            if translation.x > 60 {
+                UIView.animateWithDuration(0.3, animations: { () -> Void in
+                    self.mailboxView.center = CGPoint(x: self.mailboxViewOriginalCenter.x + 285 ,y: self.mailboxViewOriginalCenter.y)
+                })
+                let dismissPanGestureRecognizer = UIPanGestureRecognizer(target: self, action: "onDismissPan:")
+                mailboxView.addGestureRecognizer(dismissPanGestureRecognizer)
+            } else {
+                UIView.animateWithDuration(0.3, animations: { () -> Void in
+                    self.mailboxView.center = self.mailboxViewOriginalCenter
+                })
+            }
+
+            
+        }
+        
+    }
+    
+    
+    func onDismissPan(sender: UIPanGestureRecognizer) {
+        let translation = sender.translationInView(view)
+        
+        if sender.state == UIGestureRecognizerState.Began {
+            
+            mailboxViewOriginalCenter = mailboxView.center
+            
+        } else if sender.state == UIGestureRecognizerState.Changed {
+            self.mailboxView.center = CGPoint(x: self.mailboxViewOriginalCenter.x + translation.x ,y: self.mailboxViewOriginalCenter.y)
+            
+        } else if sender.state == UIGestureRecognizerState.Ended {
+            if translation.x < -60 {
+                UIView.animateWithDuration(0.3, animations: { () -> Void in
+                    self.mailboxView.center = CGPoint(x: 160 , y: self.mailboxViewOriginalCenter.y)
+                })
+
+            } else if translation.x > 60 {
+                UIView.animateWithDuration(0.3, animations: { () -> Void in
+                    self.mailboxView.center = CGPoint(x: self.mailboxViewOriginalCenter.x + 285 ,y: self.mailboxViewOriginalCenter.y)
+                })
+            } else {
+                UIView.animateWithDuration(0.3, animations: { () -> Void in
+                    self.mailboxView.center = CGPoint(x: self.mailboxViewOriginalCenter.x ,y: self.mailboxViewOriginalCenter.y)
+                })
+            }
+            
+        }
+    }
+
+    
+    
     
     @IBAction func didPanMessage(sender: UIPanGestureRecognizer) {
       
